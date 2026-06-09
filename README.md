@@ -1,17 +1,17 @@
-# Contribution #1: Android Long Press App Icon New Reminder
+# Contribution #1: Graph Editor: Group Nodes to Create Node Graph
 
-**Contribution Number:** 1
-**Student:** Minh Pham
-**Issue:** [Android long press app icon new reminder](https://github.com/streetwriters/notesnook/issues/9694)
-**Status:** Phase I Complete
+**Contribution Number:** 1 <br>
+**Student:** Minh Pham <br>
+**Issue:** [Graph Editor: Group nodes to create node graph](https://github.com/AcademySoftwareFoundation/MaterialX/issues/2018) <br>
+**Status:** Phase 1 Complete
 
 ---
 
 ## Why I Chose This Issue
 
-I chose this issue because it is a small but meaningful mobile usability improvement. Notesnook already provides a quick way to create a new note from the Android app icon long-press menu, and this issue asks for a similar shortcut for creating a new reminder. I like that this feature would make a common user workflow faster and more convenient without requiring users to open the full app and navigate through multiple screens first.
+I chose this issue because it focuses on improving the user experience of a graph-based editor. The current workflow requires users to manually create a node graph node, enter it, and then copy or paste existing nodes into it. This issue proposes a smoother workflow where selected nodes can be grouped into a new node graph directly, which feels like a practical feature that would make graph editing faster and more intuitive.
 
-This issue also matches my learning goals because it gives me the opportunity to explore how a React Native mobile app integrates with Android-specific platform features. I am interested in learning more about Android launcher shortcuts, deep links, native Android configuration, and how those connect back into the JavaScript/React Native side of the app. Through this issue, I hope to practice navigating a large open-source codebase, tracing an existing feature, and implementing a focused improvement that follows the project’s current patterns.
+This issue also matches my learning goals because it gives me a chance to work with a larger open-source codebase that is connected to graphics, materials, and node-based editing. I am interested in learning how visual editor actions are connected to underlying data structures, especially how selected nodes, node graph creation, and node connections are represented in code. Through this contribution, I hope to strengthen my skills in reading unfamiliar C++/graphics-oriented code, understanding editor command patterns, and contributing to a real production tool used by the digital content creation community.
 
 ---
 
@@ -19,20 +19,19 @@ This issue also matches my learning goals because it gives me the opportunity to
 
 ### Problem Description
 
-Currently, the Notesnook Android app supports creating a new note from the app icon long-press menu, but it does not provide a similar shortcut for creating a new reminder. This means users who frequently use reminders must open the app normally and manually navigate to the reminder creation flow instead of accessing it directly from the launcher shortcut menu.
+In the MaterialX Graph Editor, users can currently create node graph nodes, but there is no direct command or hotkey to group already-selected nodes into a new node graph. If a user has already built part of a graph and later decides that those nodes should live inside their own node graph, they must manually create the node graph and move the nodes through copy, cut, and paste. This adds extra steps and can interrupt the editing workflow.
 
 ### Expected Behavior
 
-When a user long-presses the Notesnook app icon on Android, they should see an option to create a new reminder, similar to the existing “New note” shortcut. Tapping this shortcut should open Notesnook and bring the user directly to the new reminder creation flow.
+The expected behavior is that the Graph Editor should provide a command or hotkey that takes the currently selected nodes, creates a new node graph node, and places the selected nodes inside that new node graph. Ideally, this should preserve the relevant connections so users do not have to rebuild their graph structure manually.
 
 ### Current Behavior
 
-The Android app icon long-press menu includes an option for creating a new note, but there is no equivalent option for creating a new reminder.
+Currently, users must create a node graph node first, double-click into it, and then add nodes inside it. Existing nodes cannot be grouped into a node graph directly; they have to be moved manually using copy, cut, or paste. The issue discussion also notes that nested node graphs are currently unsupported, so selected nodes should be checked to make sure they do not already include a node graph.
 
 ### Affected Components
 
-The likely affected components are the Android mobile launcher shortcut configuration and the app’s existing deep-link handling for reminders. Based on my initial review, this may involve the Android app manifest or shortcut XML resources, along with the existing React Native flow that handles opening the new reminder screen.
-
+The likely affected components are the MaterialX Graph Editor’s node selection logic, node graph creation workflow, copy/cut/paste or move-node behavior, and any command or hotkey system used by the editor. The solution will likely involve understanding how the editor represents selected nodes, how it creates node graph nodes, and how it updates connections when nodes are moved into a new graph.
 
 ---
 
