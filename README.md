@@ -115,6 +115,57 @@ For the first version, I will focus on the core workflow: create the node graph 
 **Evaluate:** I will verify the fix by rebuilding `MaterialXGraphEditor`, repeating the reproduction steps, and confirming that selected nodes can be grouped into a new node graph. I will also run the available MaterialX tests or at least the relevant build target to check for regressions.
 ---
 
+## Phase III: Build
+
+### Implementation Notes
+
+This phase focused on implementing the MaterialX Graph Editor feature for grouping selected nodes into a nodegraph using the `Shift+C` shortcut.
+
+**What I built:**
+- Added a `Shift+C` Graph Editor shortcut that groups selected ordinary MaterialX nodes into a new compound `NodeGraph`.
+- Updated grouping behavior so it works at the current graph level, including inside existing nodegraphs.
+- Added logic to preserve external connections by creating nodegraph interface inputs and outputs for links that cross the selected-node boundary.
+- Updated the Graph Editor UI so nested nodegraphs are visible, rebuild correctly, and can be navigated after grouping.
+- Updated MaterialX core connection resolution so nested compound nodegraph ports resolve against their parent graph scope.
+- Added a regression test for nested compound nodegraph boundary connections.
+
+**Main files modified:**
+- `source/MaterialXGraphEditor/Graph.h`
+- `source/MaterialXGraphEditor/Graph.cpp`
+- `source/MaterialXCore/Interface.cpp`
+- `source/MaterialXTest/MaterialXCore/Node.cpp`
+
+### Code Changes
+
+Working branch:  
+https://github.com/minhpham1810/MaterialX/tree/issue-2018-group-nodes-nodegraph
+
+Main commit:  
+https://github.com/minhpham1810/MaterialX/commit/02dc5d4729c1d1aa8e3eec8f204816e2cfa39fee
+
+Commit message:
+`Support grouping selected nodes into nested nodegraphs`
+
+### Challenges Faced
+
+The original implementation plan only grouped top-level nodes and dropped external links. After testing, I found that this was not enough for the issue’s intended user experience. Grouping nodes should create a usable wrapper nodegraph, not just move selected nodes into a disconnected container.
+
+The hardest part was supporting grouping inside an existing nodegraph. The editor could create nested nodegraphs, but MaterialX core did not correctly resolve boundary connections for nested compound nodegraphs. I traced this to connection resolution in `Interface.cpp`, then updated the resolver so nested nodegraph ports can resolve against their parent graph scope.
+
+Another challenge was preserving connections cleanly. I added logic so:
+- outside-to-inside links become nodegraph interface inputs
+- inside-to-outside links become nodegraph outputs
+- internal selected-node links remain preserved
+- invalid dangling references are avoided
+
+### Testing Strategy
+
+Validation completed:
+- Built the Graph Editor successfully:
+
+  ```bash
+  cmake --build build --target MaterialXGraphEditor -j 4
+
 ## Testing Strategy
 
 ### Unit Tests
