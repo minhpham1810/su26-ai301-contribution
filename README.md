@@ -3,7 +3,7 @@
 **Contribution Number:** 1 <br>
 **Student:** Minh Pham <br>
 **Issue:** [Graph Editor: Group nodes to create node graph](https://github.com/AcademySoftwareFoundation/MaterialX/issues/2018) <br>
-**Status:** Phase 1 Complete
+**Status:** Phase 4 Complete
 
 ---
 
@@ -119,101 +119,82 @@ For the first version, I will focus on the core workflow: create the node graph 
 
 ### Implementation Notes
 
-This phase focused on implementing the MaterialX Graph Editor feature for grouping selected nodes into a nodegraph using the `Shift+C` shortcut.
+This phase implemented the Graph Editor workflow for grouping selected nodes into a new node graph using the `Shift+C` shortcut.
 
 **What I built:**
-- Added a `Shift+C` Graph Editor shortcut that groups selected ordinary MaterialX nodes into a new compound `NodeGraph`.
-- Updated grouping behavior so it works at the current graph level, including inside existing nodegraphs.
-- Added logic to preserve external connections by creating nodegraph interface inputs and outputs for links that cross the selected-node boundary.
-- Updated the Graph Editor UI so nested nodegraphs are visible, rebuild correctly, and can be navigated after grouping.
-- Updated MaterialX core connection resolution so nested compound nodegraph ports resolve against their parent graph scope.
-- Added a regression test for nested compound nodegraph boundary connections.
-
-**Main files modified:**
-- `source/MaterialXGraphEditor/Graph.h`
-- `source/MaterialXGraphEditor/Graph.cpp`
-- `source/MaterialXCore/Interface.cpp`
-- `source/MaterialXTest/MaterialXCore/Node.cpp`
+- Added a command that groups selected Graph Editor nodes into a new compound `NodeGraph`.
+- Preserved internal links between selected nodes.
+- Preserved external upstream and downstream connections by creating nodegraph interface inputs and outputs.
+- Supported grouping at the current graph level, including inside existing nodegraphs.
+- Updated nested compound nodegraph connection resolution in MaterialX core.
+- Fixed the `Shift+C` hotkey so it is detected directly by the Graph Editor instead of relying on the node editor’s built-in shortcut handler.
+- Added regression coverage for nested nodegraph connections and the grouping shortcut predicate.
 
 ### Code Changes
 
-Working branch:  
+**Working branch:**  
 https://github.com/minhpham1810/MaterialX/tree/issue-2018-group-nodes-nodegraph
 
-Main commit:  
-https://github.com/minhpham1810/MaterialX/commit/02dc5d4729c1d1aa8e3eec8f204816e2cfa39fee
+**Key commits:**
+- `02dc5d47` - `Support grouping selected nodes into nested nodegraphs`
+- `f9f1acd2` - `Fix graph editor Shift+C node grouping shortcut`
 
-Commit message:
-`Support grouping selected nodes into nested nodegraphs`
+**Main files modified:**
+- `source/MaterialXGraphEditor/Graph.cpp`
+- `source/MaterialXGraphEditor/Graph.h`
+- `source/MaterialXGraphEditor/GraphShortcuts.h`
+- `source/MaterialXCore/Interface.cpp`
+- `source/MaterialXTest/CMakeLists.txt`
+- `source/MaterialXTest/MaterialXCore/Node.cpp`
+- `source/MaterialXTest/MaterialXGraphEditor/CMakeLists.txt`
+- `source/MaterialXTest/MaterialXGraphEditor/GraphShortcuts.cpp`
 
 ### Challenges Faced
 
-The original implementation plan only grouped top-level nodes and dropped external links. After testing, I found that this was not enough for the issue’s intended user experience. Grouping nodes should create a usable wrapper nodegraph, not just move selected nodes into a disconnected container.
+The first challenge was preserving graph structure. Simply moving selected nodes into a nodegraph was not enough because links crossing the selected-node boundary would be lost. I solved this by converting outside-to-inside links into nodegraph interface inputs and inside-to-outside links into nodegraph outputs.
 
-The hardest part was supporting grouping inside an existing nodegraph. The editor could create nested nodegraphs, but MaterialX core did not correctly resolve boundary connections for nested compound nodegraphs. I traced this to connection resolution in `Interface.cpp`, then updated the resolver so nested nodegraph ports can resolve against their parent graph scope.
+The second challenge was nested nodegraphs. Grouping inside an existing nodegraph exposed a MaterialX core issue where nested compound nodegraph ports did not resolve correctly against their parent graph scope. I updated the connection resolver so nested boundary connections can resolve properly.
 
-Another challenge was preserving connections cleanly. I added logic so:
-- outside-to-inside links become nodegraph interface inputs
-- inside-to-outside links become nodegraph outputs
-- internal selected-node links remain preserved
-- invalid dangling references are avoided
-
-### Testing Strategy
-
-Validation completed:
-- Built the Graph Editor successfully:
-
-  ```bash
-  cmake --build build --target MaterialXGraphEditor -j 4
+The final challenge was the `Shift+C` shortcut itself. The original implementation checked the shortcut inside the node editor’s built-in shortcut handler, but that handler only accepts certain built-in shortcuts such as copy, cut, paste, duplicate, and space. I fixed this by moving the grouping shortcut detection outside that path and adding a small testable shortcut predicate.
 
 ## Testing Strategy
 
 ### Unit Tests
 
-- [ ] Test case 1: [Description]
-- [ ] Test case 2: [Description]
-- [ ] Test case 3: [Description]
+- Added `Nested compound nodegraph connections` coverage in `MaterialXTest` to verify nested nodegraph boundary connections resolve correctly.
+- Added `Graph editor grouping shortcut` coverage to verify `Shift+C` activates only when the right modifier/key state is present.
+- Verified the shortcut is disabled when conflicting UI states are active, such as graph editor popups or file dialogs.
 
-### Integration Tests
+### Build and Regression Testing
 
-- [ ] Integration scenario 1
-- [ ] Integration scenario 2
+Validation completed:
 
+```bash
+git diff --check
+/private/tmp/materialx-hotkey-build/bin/MaterialXTest "Graph editor grouping shortcut"
+cmake --build build --target MaterialXGraphEditor
+```
 ### Manual Testing
 
-[What you tested manually and results]
-
----
-
-## Implementation Notes
-
-### Week [X] Progress
-
-[What you built this week, challenges faced, decisions made]
-
-### Week [Y] Progress
-
-[Continue documenting as you work]
-
-### Code Changes
-
-- **Files modified:** [List]
-- **Key commits:** [Links to important commits]
-- **Approach decisions:** [Why you chose certain approaches]
+I tested the Graph Editor workflow by selecting nodes in a graph and using Shift+C to group them into a new nodegraph. The grouped nodes moved into the new nodegraph, internal connections were preserved, and external links were represented through nodegraph interface inputs and outputs.
 
 ---
 
 ## Pull Request
 
-**PR Link:** [GitHub PR URL when submitted]
+**PR Link:** https://github.com/AcademySoftwareFoundation/MaterialX/pull/3002
 
-**PR Description:** [Draft or final PR description - much of the content above can be adapted]
+**PR Description:** 
+
+Fixes the MaterialX Graph Editor `Shift+C` node-grouping shortcut so it actually triggers when graph nodes are selected.
+
+The shortcut had been checked inside the node editor’s built-in shortcut handler, which only activates for its own copy/cut/paste-style shortcuts. This moves the grouping shortcut detection outside that gate while keeping it disabled when graph editor popups or file dialogs are active.
 
 **Maintainer Feedback:**
 - [Date]: [Summary of feedback received]
 - [Date]: [How you addressed it]
 
-**Status:** [Awaiting review / Iterating / Approved / Merged]
+**Status:**  Awaiting Review
 
 ---
 
@@ -221,20 +202,19 @@ Validation completed:
 
 ### Technical Skills Gained
 
-[What you learned technically]
+C++, debugging, testing
 
 ### Challenges Overcome
 
-[What was hard and how you solved it]
+The hard part for me was the C++ language itself, since I was not very familiar with it. As I progress in implementing this feature, it took a lot of time for me to understand and write in C++, but eventually I could afford to make myself a little more comfortable with it.
 
 ### What I'd Do Differently Next Time
 
-[Reflection on your process]
+I would write the shortcut predicate test earlier, before wiring the command into the editor loop. That would have made the shortcut limitation easier to isolate. I would also investigate framework shortcut behavior earlier instead of assuming all key combinations could be handled through the same built-in shortcut path.
 
 ---
 
 ## Resources Used
 
-- [Link to helpful documentation]
-- [Tutorial or Stack Overflow post that helped]
-- [GitHub issues or discussions that helped]
+- [Issue discussion](https://github.com/AcademySoftwareFoundation/MaterialX/issues/2018)
+- [learncpp website](https://www.learncpp.com/)
