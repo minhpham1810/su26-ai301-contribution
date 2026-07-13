@@ -218,3 +218,180 @@ I would write the shortcut predicate test earlier, before wiring the command int
 
 - [Issue discussion](https://github.com/AcademySoftwareFoundation/MaterialX/issues/2018)
 - [learncpp website](https://www.learncpp.com/)
+
+# Contribution 2: Graph Editor: Add UI support for enumerated values
+
+**Contribution Number:** 2 
+**Student:** Minh Pham  
+**Issue:** [GitHub issue link](https://github.com/AcademySoftwareFoundation/MaterialX/issues/2366#event-27859335602)  
+**Status:** Phase I
+
+---
+
+## Why I Chose This Issue
+
+This issue comes from the same project where I made my first open-source contribution. After working with the codebase and successfully completing that contribution, I became much more confident in my ability to understand the project, navigate its development workflow, and contribute effectively. I believe this issue would be a strong next step for me because it would allow me to continue improving my C++ skills while building on the familiarity I have already gained with the project. More importantly, it gives me the opportunity to make another meaningful contribution to influential software that is actively used and maintained by a broader community.
+
+---
+
+## Understanding the Issue
+
+### Problem Description
+
+`GraphEditor` currently displays inputs with enumerated values as free-form text fields. This requires users to know or manually look up the exact supported values in the MaterialX specification or node definitions. It also allows invalid values to be entered and may trigger unnecessary shader rebuilds each time the text changes.
+
+My plan is to add enum-specific handling in `Graph::showPropertyEditorValue()` that renders an ImGui combo box instead of a text field. The combo box will use the enum labels and values provided by the active NodeDef input, match the current value to the appropriate selection, and write the corresponding value back when the user chooses another option.
+
+Rather than adding enum parsing only within `GraphEditor`, I plan to update the shared enum metadata path in `mx::getUIProperties()` so enum information is also available for non-uniform inputs. The current implementation only extracts this metadata when `input->getIsUniform()` is true, even though several useful standard-library enum inputs are not marked as uniform. Relaxing or removing that restriction should avoid duplicated parsing logic and allow the improvement to benefit both GraphEditor and `MaterialXView`.
+
+The implementation will follow the existing enum-to-combo behavior in `MaterialXView/Editor.cpp` while extending support beyond integer enums to include relevant types such as strings and colors.
+
+### Expected Behavior
+
+When a property has enum and enumvalues metadata, the property editor should display a combo box containing the available enum labels instead of a free-form text field.
+
+The current value should be matched to the correct item in the combo box. When the user selects another item, the corresponding enum value should be written back to the input. Users should only be able to select valid predefined values, and changing the selection should trigger a shader rebuild only when the value actually changes.
+
+This behavior should work for both uniform and non-uniform enum inputs and should remain consistent between `GraphEditor` and `MaterialXView`.
+
+### Current Behavior
+
+Enumerated properties are currently rendered as regular text-entry fields in `GraphEditor`. Users must manually enter the exact enum value, which means they may need to consult the MaterialX specification or node definition to determine which values are valid.
+
+Because the field accepts arbitrary text, users can enter unsupported values. In addition, editing the text can cause repeated shader rebuilds as the value changes, even before the user has finished entering the intended value.
+
+The shared `mx::getUIProperties()` utility currently exposes enum metadata only when an input is marked as uniform. As a result, enum information is unavailable for several non-uniform standard-library inputs that would still benefit from a dropdown interface.
+
+### Affected Components
+
+- `Graph::showPropertyEditorValue()` in `GraphEditor`, where property editor widgets are selected and rendered.
+- `mx::getUIProperties()` in `MaterialXRender/Util.cpp`, where enum labels and values are extracted from input metadata.
+- `MaterialXView/Editor.cpp`, which contains the existing integer enum combo-box implementation that can be used as a reference.
+- Standard-library NodeDef inputs containing enum and enumvalues attributes, including inputs that are not marked with `uniform="true"`.
+- Shader rebuild behavior triggered by property-value changes.
+
+---
+
+## Reproduction Process
+
+### Environment Setup
+
+[Notes on setting up your local development environment - challenges you faced, how you solved them]
+
+### Steps to Reproduce
+
+1. [Step 1]
+2. [Step 2]
+3. [Observed result]
+
+### Reproduction Evidence
+
+- **Commit showing reproduction:** [Link to commit in your fork]
+- **Screenshots/logs:** [If applicable]
+- **My findings:** [What you discovered during reproduction]
+
+---
+
+## Solution Approach
+
+### Analysis
+
+[Your analysis of the root cause - what's causing the issue?]
+
+### Proposed Solution
+
+[High-level description of your fix approach]
+
+### Implementation Plan
+
+Using UMPIRE framework (adapted):
+
+**Understand:** [Restate the problem]
+
+**Match:** [What similar patterns/solutions exist in the codebase?]
+
+**Plan:** [Step-by-step implementation plan]
+1. [Modify file X to do Y]
+2. [Add function Z]
+3. [Update tests]
+
+**Implement:** [Link to your branch/commits as you work]
+
+**Review:** [Self-review checklist - does it follow the project's contribution guidelines?]
+
+**Evaluate:** [How will you verify it works?]
+
+---
+
+## Testing Strategy
+
+### Unit Tests
+
+- [ ] Test case 1: [Description]
+- [ ] Test case 2: [Description]
+- [ ] Test case 3: [Description]
+
+### Integration Tests
+
+- [ ] Integration scenario 1
+- [ ] Integration scenario 2
+
+### Manual Testing
+
+[What you tested manually and results]
+
+---
+
+## Implementation Notes
+
+### Week [X] Progress
+
+[What you built this week, challenges faced, decisions made]
+
+### Week [Y] Progress
+
+[Continue documenting as you work]
+
+### Code Changes
+
+- **Files modified:** [List]
+- **Key commits:** [Links to important commits]
+- **Approach decisions:** [Why you chose certain approaches]
+
+---
+
+## Pull Request
+
+**PR Link:** [GitHub PR URL when submitted]
+
+**PR Description:** [Draft or final PR description - much of the content above can be adapted]
+
+**Maintainer Feedback:**
+- [Date]: [Summary of feedback received]
+- [Date]: [How you addressed it]
+
+**Status:** [Awaiting review / Iterating / Approved / Merged]
+
+---
+
+## Learnings & Reflections
+
+### Technical Skills Gained
+
+[What you learned technically]
+
+### Challenges Overcome
+
+[What was hard and how you solved it]
+
+### What I'd Do Differently Next Time
+
+[Reflection on your process]
+
+---
+
+## Resources Used
+
+- [Link to helpful documentation]
+- [Tutorial or Stack Overflow post that helped]
+- [GitHub issues or discussions that helped]
